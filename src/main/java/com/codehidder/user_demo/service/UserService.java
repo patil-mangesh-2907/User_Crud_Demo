@@ -2,7 +2,9 @@ package com.codehidder.user_demo.service;
 
 import com.codehidder.user_demo.dto.*;
 import com.codehidder.user_demo.entity.User;
-import com.codehidder.user_demo.mapper.Mapper;
+import com.codehidder.user_demo.exception.DuplicateResourceException;
+import com.codehidder.user_demo.exception.ResourceNotFoundException;
+import com.codehidder.user_demo.mapper.UserMapper;
 import com.codehidder.user_demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,43 +15,44 @@ import java.util.List;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final Mapper mapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    public UserService(UserRepository userRepository, Mapper mapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
-        this.mapper = mapper;
+        this.userMapper = userMapper;
     }
 
-    //createUser
-    public CreateUserResponseDto createUser(CreateUserRequestDto userRequestDto) {
-        User user = userRepository.save(mapper.mapCreateUserRequestDtoToEntity(userRequestDto));
+    public UserResponseDto createUser(CreateUserRequestDto userRequestDto) {
 
-        return mapper.mapEntityToCreateUserResponseDto(user);
+        if (userRepository.existsByEmail(userRequestDto.getEmail())) {
+            throw new DuplicateResourceException("User with email: " + userRequestDto.getEmail() + " already exists");
+        }
+
+        User user = userRepository.save(userMapper.mapCreateUserRequestDtoToEntity(userRequestDto));
+
+        return userMapper.mapEntityToUserResponseDto(user);
     }
 
-    //getUserById(id)
-    public CreateUserResponseDto getUserById(Long id) {
+    public UserResponseDto getUserById(Long id) {
         User user = userRepository.findUserByIdAndDeletedIsFalse(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id:" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id: " + id + " not found"));
 
-        return mapper.mapEntityToCreateUserResponseDto(user);
+        return userMapper.mapEntityToUserResponseDto(user);
 
     }
 
-    //getAllUsers
-    public List<CreateUserResponseDto> getAllUsers() {
+    public List<UserResponseDto> getAllUsers() {
         List<User> users = userRepository.findAllByDeletedIsFalse();
 
         return users.stream()
-                .map(mapper::mapEntityToCreateUserResponseDto)
+                .map(userMapper::mapEntityToUserResponseDto)
                 .toList();
     }
 
-    //softDelete(id)
-    public void deleteUserSoftly(Long id) {
+    public void softDeleteUser(Long id) {
         User user = userRepository.findUserByIdAndDeletedIsFalse(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id:" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id: " + id + " not found"));
 
         user.setDeleted(true);
 
@@ -58,18 +61,16 @@ public class UserService {
         userRepository.save(user);
     }
 
-    //hardDelete(id)
-    public void deleteUserHardly(Long id) {
+    public void hardDeleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id:" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id: " + id + " not found"));
 
         userRepository.deleteById(id);
     }
 
-    //updateUserById(id,user)
     public UpdateUserResponseDto updateUserById(Long id, UpdateUserRequestDto userRequestDto) {
         User user = userRepository.findUserByIdAndDeletedIsFalse(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id:" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id: " + id + " not found"));
 
         user.setName(userRequestDto.getName());
         user.setAddress(userRequestDto.getAddress());
@@ -77,24 +78,22 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        return mapper.mapEntityToUpdateUserResponseDto(savedUser);
+        return userMapper.mapEntityToUpdateUserResponseDto(savedUser);
     }
 
-    //getAllWithSoftDeleted --Only for companyUses
-    public List<CreateUserResponseDto> getAllWithSoftDeleted() {
+    public List<UserResponseDto> getAllUsersIncludingDeleted() {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .map(mapper::mapEntityToCreateUserResponseDto)
+                .map(userMapper::mapEntityToUserResponseDto)
                 .toList();
     }
 
-    //getAllSoftDeleted
-    public List<SoftDeleteResponseDto> getAllSoftDeleted() {
+    public List<SoftDeleteResponseDto> getSoftDeletedUsers() {
         List<User> users = userRepository.findAllByDeletedIsTrue();
 
         return users.stream()
-                .map(mapper::mapEntityToSoftDeleteResponse)
+                .map(userMapper::mapEntityToSoftDeleteResponse)
                 .toList();
     }
 }

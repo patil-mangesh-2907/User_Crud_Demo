@@ -1,7 +1,7 @@
 package com.codehidder.user_demo.mapper;
 
 import com.codehidder.user_demo.dto.CreateUserRequestDto;
-import com.codehidder.user_demo.dto.CreateUserResponseDto;
+import com.codehidder.user_demo.dto.UserResponseDto;
 import com.codehidder.user_demo.dto.SoftDeleteResponseDto;
 import com.codehidder.user_demo.dto.UpdateUserResponseDto;
 import com.codehidder.user_demo.entity.User;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class Mapper {
+public class UserMapper {
     public User mapCreateUserRequestDtoToEntity(CreateUserRequestDto requestDto) {
         User user = new User();
 
@@ -27,8 +27,8 @@ public class Mapper {
         return user;
     }
 
-    public CreateUserResponseDto mapEntityToCreateUserResponseDto(User user) {
-        CreateUserResponseDto responseDto = new CreateUserResponseDto();
+    public UserResponseDto mapEntityToUserResponseDto(User user) {
+        UserResponseDto responseDto = new UserResponseDto();
 
         responseDto.setId(user.getId());
         responseDto.setName(user.getName());

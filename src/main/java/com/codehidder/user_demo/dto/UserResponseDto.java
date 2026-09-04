@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
         "id", "name", "address", "email", "mobile",
         "createdAt", "updatedAt"
 })
-public class CreateUserResponseDto {
+public class UserResponseDto {
     private Long id;
     private String name;
     private String address;

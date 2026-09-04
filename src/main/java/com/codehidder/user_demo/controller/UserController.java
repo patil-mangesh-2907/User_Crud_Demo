@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     private final UserService userService;
 
     @Autowired
@@ -20,71 +21,86 @@ public class UserController {
         this.userService = userService;
     }
 
-    //createUser
+    // Create User
     @PostMapping
-    public ResponseEntity<CreateUserResponseDto> createUser(@RequestBody @Valid CreateUserRequestDto requestDto) {
-        CreateUserResponseDto userResponseDto = userService.createUser(requestDto);
+    public ResponseEntity<UserResponseDto> createUser(
+            @RequestBody @Valid CreateUserRequestDto requestDto) {
+
+        UserResponseDto responseDto = userService.createUser(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userResponseDto);
-    }
-
-    //getUserById(id)
-    @GetMapping("/{id}")
-    public ResponseEntity<CreateUserResponseDto> getUserById(@PathVariable Long id) {
-        CreateUserResponseDto userResponseDto = userService.getUserById(id);
-
-        return ResponseEntity.ok(userResponseDto);
-    }
-
-    //getAllUsers
-    @GetMapping
-    public ResponseEntity<List<CreateUserResponseDto>> getAllUsers() {
-        List<CreateUserResponseDto> users = userService.getAllUsers();
-
-        return ResponseEntity.ok(users);
-    }
-
-    //softDelete(id)
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> deleteUserSoftly(@PathVariable Long id) {
-        userService.deleteUserSoftly(id);
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    //hardDelete(id)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserHardly(@PathVariable Long id) {
-        userService.deleteUserHardly(id);
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    //updateUserById(id,user)
-    @PutMapping("/{id}")
-    public ResponseEntity<UpdateUserResponseDto> updateUserById(@PathVariable Long id, @RequestBody @Valid UpdateUserRequestDto requestDto) {
-        UpdateUserResponseDto responseDto = userService.updateUserById(id, requestDto);
-
-        return ResponseEntity.status(HttpStatus.OK)
                 .body(responseDto);
     }
 
-    //getAllWithSoftDeleted --Only for companyUses
-    @GetMapping("/get-all-with-soft-deleted-hr@team")
-    public ResponseEntity<List<CreateUserResponseDto>> getAllWithSoftDeleted() {
-        List<CreateUserResponseDto> users = userService.getAllWithSoftDeleted();
+    // Get User By ID
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDto> getUserById(
+            @PathVariable Long id) {
+
+        UserResponseDto responseDto = userService.getUserById(id);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // Get All Active Users
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+
+        List<UserResponseDto> users = userService.getAllUsers();
 
         return ResponseEntity.ok(users);
     }
 
-    //getAllSoftDeleted
-    @GetMapping("/get-all-soft-deleted")
-    public ResponseEntity<List<SoftDeleteResponseDto>> getAllSoftDeleted() {
-        List<SoftDeleteResponseDto> responseDtoList = userService.getAllSoftDeleted();
+    // Soft Delete User
+    @PatchMapping("/{id}/soft-delete")
+    public ResponseEntity<Void> softDeleteUser(
+            @PathVariable Long id) {
+
+        userService.softDeleteUser(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // Hard Delete User
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> hardDeleteUser(
+            @PathVariable Long id) {
+
+        userService.hardDeleteUser(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // Update User
+    @PutMapping("/{id}")
+    public ResponseEntity<UpdateUserResponseDto> updateUserById(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateUserRequestDto requestDto) {
+
+        UpdateUserResponseDto responseDto =
+                userService.updateUserById(id, requestDto);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // Get All Users Including Soft Deleted Users
+    @GetMapping(params = "includeDeleted")
+    public ResponseEntity<List<UserResponseDto>> getAllUsersIncludingDeleted(
+            @RequestParam boolean includeDeleted) {
+
+        List<UserResponseDto> users =
+                userService.getAllUsersIncludingDeleted();
+
+        return ResponseEntity.ok(users);
+    }
+
+    // Get Soft Deleted Users
+    @GetMapping("/deleted")
+    public ResponseEntity<List<SoftDeleteResponseDto>> getSoftDeletedUsers() {
+
+        List<SoftDeleteResponseDto> responseDtoList =
+                userService.getSoftDeletedUsers();
 
         return ResponseEntity.ok(responseDtoList);
     }
-
-
 }

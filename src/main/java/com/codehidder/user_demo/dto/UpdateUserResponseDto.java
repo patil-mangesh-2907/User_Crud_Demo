@@ -1,7 +1,12 @@
 package com.codehidder.user_demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.time.LocalDateTime;
 
+@JsonPropertyOrder({
+        "id", "name", "address", "email", "mobile", "createdAt", "updatedAt"
+})
 public class UpdateUserResponseDto {
     private Long id;
     private String name;
