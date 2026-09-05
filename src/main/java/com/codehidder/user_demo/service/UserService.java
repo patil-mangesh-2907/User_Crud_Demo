@@ -5,6 +5,7 @@ import com.codehidder.user_demo.entity.User;
 import com.codehidder.user_demo.exception.DuplicateResourceException;
 import com.codehidder.user_demo.exception.ResourceNotFoundException;
 import com.codehidder.user_demo.mapper.UserMapper;
+import com.codehidder.user_demo.notification.NotificationService;
 import com.codehidder.user_demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,13 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.notificationService = notificationService;
     }
 
     public UserResponseDto createUser(CreateUserRequestDto userRequestDto) {
@@ -30,6 +33,8 @@ public class UserService {
         }
 
         User user = userRepository.save(userMapper.mapCreateUserRequestDtoToEntity(userRequestDto));
+
+        notificationService.sendNotification("User created successfully: " + user.getEmail());
 
         return userMapper.mapEntityToUserResponseDto(user);
     }
